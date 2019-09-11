@@ -1,0 +1,152 @@
+﻿@model IEnumerable<CountryClubMVC.Models.User>
+
+@{
+    ViewBag.Title = "People";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    CountryClubMVC.Models.User _user = new CountryClubMVC.Models.User();
+    CountryClubMVC.Models.AppDbContext db = new CountryClubMVC.Models.AppDbContext();
+    bool isFollowing;
+
+
+    if (HttpContext.Current.Session["User"] != null)
+    {
+        _user = (CountryClubMVC.Models.User)HttpContext.Current.Session["User"];
+        ViewBag.Name = _user.Username;
+        ViewBag.FamID = _user.Family_ID;
+        ViewBag.UserID = _user.User_ID;
+        ViewBag.DP = _user.DisplayPicture ?? "../../Content/NewContent/dist/img/user2-160x160.jpg";
+    }
+}
+
+
+<h2>People</h2>
+<!--Search functionality-->
+<div class="col-md-8">
+    @using (Html.BeginForm("People", "Users", FormMethod.Get))
+    {
+        <div class="input-group">
+            <form asp-controller="Users" asp-action="People">
+                <p>
+
+                    <input class="form-control" type="text" placeholder="Search by name" name="SearchString">
+                    <div class="input-group-btn">
+                        <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Search</button><br />
+                    </div>
+
+                </p>
+            </form>
+        </div>
+        <br />
+        <br />
+    }
+</div>
+
+<!--Display for each user-->
+<div class="overflow-auto">
+
+    <div class="col-md-8">
+
+        @foreach (var item in Model)
+        {
+            //Get userID  of User
+            var UserID = item.User_ID;
+            //Get displayPic tied to that ID
+            var User = db.Users.Find(UserID);
+            //Set Poster's image to
+            var userDP = User.DisplayPicture ?? "../../Content/NewContent/dist/img/user2-160x160.jpg";
+            //Get and Set user Full name
+            var userfullName = User.Firstname + " " + User.Lastname;
+            // ViewBag.userfullName = userfullName;
+            //Get User Title
+            var userTitle = User.Title;
+            //Get Profile link
+            var userProfile = "Profile/" + UserID;
+            ViewBag.userProfile = "Profile/" + UserID;
+
+            //userID in session
+            int userId = Convert.ToInt32(ViewBag.UserID);
+
+            ViewBag.followuser = "Follow/" + UserID;
+            ViewBag.followAction = "Follow";
+
+            //Get user's following:
+            var followerList = db.Followerships.Where(x => x.FollowerID == userId).ToList();
+            //Check if person's id  exist on  user followers list
+            if (followerList.Count != 0)
+            {
+
+                var userFollowing = followerList.FirstOrDefault(x => x.UserID == item.User_ID);
+                //  var userFollowing = db.Followerships.Where(x => x.FollowerID == userId && x.UserID == item.User_ID).First();
+                ViewBag.followAction = "Follow";
+                if (userFollowing != null)
+                {
+                    isFollowing = userFollowing.isFollowing;
+                    if (isFollowing == true)
+                    {
+                        ViewBag.followAction = "Unfollow";
+                    }
+
+                }
+                else
+                {
+                    ViewBag.followAction = "Follow";
+
+                }
+
+            }
+
+            //new div:
+            <div class="col-md-4">
+                <!-- Widget: user widget style 1 -->
+                <div class="box box-widget widget-user-2">
+                    <!-- Add the bg color to the header using any of the bg-* classes -->
+                    <div class="widget-user-header bg-black-gradient">
+                        <div class="widget-user-image" width=auto>
+                            <img class="img-circle" src="@userDP" alt="User Avatar">
+                            <br />
+                        </div>
+                       
+                        <!-- /.widget-user-image -->
+                        <h3><a href="@Url.Action(@ViewBag.userProfile, "Users")">@userfullName</a></h3>
+                        <h5 class="widget-user-desc">@userTitle</h5>
+                    </div>
+                    <div class="box-footer no-padding">
+                        @if (@ViewBag.followAction != "Follow")
+                        {
+                            <form action="@Url.Action("UnFollow", "Followerships")" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" id="id" name="id" class="form-control input-sm" value="@item.User_ID">
+                                <button type="submit" class="btn btn-primary btn-block"><b>Unfollow</b></button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form action="@Url.Action("Follow", "Followerships")" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" id="id" name="id" class="form-control input-sm" value="@item.User_ID">
+                                <button type="submit" class="btn btn-primary btn-block"><b>Follow</b></button>
+                            </form>
+                        }
+
+
+                    </div>
+                </div>
+                <!-- /.widget-user -->
+            </div>
+        }
+    </div>
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+</div>
+<br />
+<br />
+<br />
+<br />
+<br />

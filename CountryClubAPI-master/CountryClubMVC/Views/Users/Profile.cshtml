@@ -1,0 +1,183 @@
+﻿@model CountryClubMVC.Models.User
+
+@{
+    ViewBag.Title = "Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    CountryClubMVC.Models.User _user = new CountryClubMVC.Models.User();
+    CountryClubMVC.Models.AppDbContext db = new CountryClubMVC.Models.AppDbContext();
+    if (HttpContext.Current.Session["User"] != null)
+    {
+        _user = (CountryClubMVC.Models.User)HttpContext.Current.Session["User"];
+        ViewBag.DP = _user.DisplayPicture ?? "../../Content/NewContent/dist/img/user2-160x160.jpg";
+        ViewBag.CoverPic = _user.CoverPicture ?? "../../Content/NewContent/dist/img/photo2.png";
+
+
+    }
+    else
+    {
+        Response.Redirect("~/Users/Login");
+    }
+
+
+}
+
+@{ 
+    //Get userID  of User
+    var UserID = Convert.ToInt32(Session["ProfileID"]);
+    //Get displayPic tied to that ID
+    var User = db.Users.Find(UserID);
+    var DisplayPic = User.DisplayPicture ?? "../../Content/NewContent/dist/img/user2-160x160.jpg";
+    ViewBag.DisplayPic = DisplayPic;
+    var CoverPics = User.CoverPicture ?? "../../Content/NewContent/dist/img/photo2.png";
+    ViewBag.CoverPics = CoverPics;
+    var followerList = db.Followerships.Where(x => x.FollowerID == UserID).ToList();
+    var followingList = db.Followerships.Where(x => x.UserID == UserID).ToList();
+    ViewBag.followerCount = followerList.Count();
+    ViewBag.followingCount = followingList.Count();
+
+}
+
+
+<div>
+
+    <hr />
+    <dl class="dl-horizontal">
+
+
+        @*<div class="box-body box-profile">
+                <img class="profile-user-img img-responsive img-circle" src="../../Content/NewContent/dist/img/user2-160x160.jpg" alt="User profile picture">
+
+                <h3 class="profile-username text-center">
+                    @Html.DisplayFor(modelItem => modelItem.Firstname)
+                    @Html.DisplayFor(modelItem => modelItem.Lastname)
+                </h3>
+
+                <p class="text-muted text-center">Software Engineer</p>
+
+                <ul class="list-group list-group-unbordered">
+                    <li class="list-group-item">
+                        <b>Followers</b> <a class="pull-right">1,322</a>
+                    </li>
+                    <li class="list-group-item">
+                        <b>Following</b> <a class="pull-right">543</a>
+                    </li>
+                    <li class="list-group-item">
+                        <b>Friends</b> <a class="pull-right">13,287</a>
+                    </li>
+                </ul>
+
+
+            </div>*@
+
+        <div class="col-lg-12">
+            <!-- Widget: user widget style 1 -->
+            <div class="box box-widget widget-user">
+                <!-- Add the bg color to the header using any of the bg-* classes -->
+                <div class="widget-user-header bg-black" style="background: url(@ViewBag.CoverPics) center center;">
+                    <h3 class="widget-user-username">
+                        @Html.DisplayFor(modelItem => modelItem.Firstname)
+                        @Html.DisplayFor(modelItem => modelItem.Lastname)
+                    </h3>
+                    <h5 class="widget-user-desc">
+                        @Html.DisplayFor(modelItem => modelItem.Title)
+
+                    </h5>
+                </div>
+                <div class=" widget-user-image">
+                    <img class=" profile-user-img img-responsive img-circle" src="@ViewBag.DisplayPic" alt="User Avatar">
+                </div>
+
+                <br />
+                <div class="box-footer">
+                    <div class="row">
+                        <div class="col-sm-4 border-right">
+                            <div class="description-block">
+                                <h5 class="description-header">@ViewBag.followerCount</h5>
+                                <span class="description-text">Following</span>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-4 border-right">
+                            <div class="description-block">
+                                <h5 class="description-header">@ViewBag.followingCount</h5>
+                                <span class="description-text">FOLLOWERS</span>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                       
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+                </div>
+            </div>
+            <!-- /.widget-user -->
+        </div>
+
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                <div class="box box-warning box-solid">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">ABOUT ME</h3>
+
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body" style="">
+
+
+                        <strong><i class="fa fa-fw fa-user margin-r-5"></i> Member Since</strong>
+
+                        <p class="text-muted">
+
+                            @Html.DisplayFor(modelItem => modelItem.DateJoined)
+                        </p>
+                        <hr />
+                        <strong><i class="fa fa-fw fa-mars-stroke margin-r-5"></i> Gender</strong>
+
+                        <p class="text-muted">
+
+                            @Html.DisplayFor(modelItem => modelItem.Gender)
+                        </p>
+                        <hr />
+                        <strong><i class="fa fa-book margin-r-5"></i> BIO</strong>
+
+                        <p class="text-muted">
+
+                            @Html.DisplayFor(modelItem => modelItem.Bio)
+                        </p>
+
+                        <hr>
+
+                        <strong><i class="fa fa-map-marker margin-r-5"></i> Location</strong>
+                        <p class="text-muted">
+
+                            @Html.DisplayFor(modelItem => modelItem.Street),  @Html.DisplayFor(modelItem => modelItem.Town), @Html.DisplayFor(modelItem => modelItem.Country)
+                        </p>
+
+
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+        <div class="box-body">
+
+        </div>
+
+
+    </dl>
+</div>
+
